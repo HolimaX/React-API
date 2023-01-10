@@ -1,0 +1,300 @@
+---
+openapi: "3.1"
+info:
+    description: |
+        This is the swagger file with Mocked requests, that goes with server code in people.py or compatible modules.
+
+        The Mocked requests are supported via ReSTful Microservice architecture.
+
+        For Production-ready API definitions, use [Code Samples for PCD v1.2.x](https://github.com/Healthdash/CloudDash-Backend-ReactJS-API) or later.
+
+        For more information, see [HealthDash Homepage](https://demo.healthdash.lv)
+    version: "1.0.3"
+    title: Swagger ReSTful for PUT/GET/POST/DELETE (CRUD)
+    termsOfService: https://linardsliepins.wordpress.com/2019/09/18/privacy-policy/
+    contact:
+        name: API Support for v1.2.x
+        url: https://www.healthdash.lv/ecosystem/PCD
+        email: support@healthdash.lv
+    license:
+        name: MIT
+        url: https://github.com/HolimaX/React/blob/master/LICENSE
+
+externalDocs:
+    description: Support Codes
+    url: https://www.healthdash.lv/SER
+
+#basePath: /api
+servers:
+    - url: https://demo.healthdash.lv/api/
+      description: Mock server for v1.2.x
+
+# Global security definition for component
+security:
+    - oAuthSample:
+          - write_users
+          - read_users
+
+# Paths supported by the server application
+paths:
+    /version/{version}:
+        get:
+            operationId: people.read_filter
+            tags:
+                - version
+            summary: Read the specific filter of all versions
+            description: Read the filter from versions
+            parameters:
+                - name: version
+                  in: path
+                  schema:
+                      type: string
+                  description: Name of version to get from version list
+                  required: true
+                - name: filter
+                  in: query
+                  schema:
+                      type: string
+                      enum:
+                          - Latest
+                          - Current
+                          - Default
+                      default: Latest
+                  description: Filter for version presets ( See [SER](https://www.healthdash.lv/SER) for details )
+                  required: false
+            responses:
+                200:
+                    description: Successfully read version list operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    properties:
+                                        cod:
+                                            type: integer
+                                        version:
+                                            type: string
+                                        filter:
+                                            type: string
+                                        flavor:
+                                            type: string
+    /people/{voteid}:
+        get:
+            security:
+                - oAuthSample:
+                      - read_users
+            operationId: people.read_one
+            tags:
+                - people
+            summary: Read one card from the card list
+            description: Read one card from the card list
+            parameters:
+                - name: voteid
+                  in: path
+                  description: Leading Digits of the card to get from the list
+                  schema:
+                      type: string
+                  required: true
+            responses:
+                200:
+                    description: Successfully read one card from card list operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/read_one" # Reference to object definition
+                        application/vnd.healthdashltdlatvia.healthsync.v2+json:
+                            schema:
+                                $ref: "#/components/schemas/read_one" # Reference to object definition
+                    links:
+                        PutUserByVoteId: # <---- arbitrary name for the link
+                            operationId: people.update
+                            # or
+                            # operationRef: '#/paths/~1users~1{userId}/get'
+                            parameters:
+                                voteId: "$response.body#/voteid"
+                            description: >
+                                The `id` value returned in the response can be used as
+                                the `userId` parameter in `PUT /people/{voteId}`.
+                        DeleteUserByVoteId: # <---- arbitrary name for the link
+                            operationId: people.delete
+                            # or
+                            # operationRef: '#/paths/~1users~1{userId}/get'
+                            parameters:
+                                voteId: "$response.body#/voteid"
+                            description: >
+                                The `id` value returned in the response can be used as
+                                the `userId` parameter in `PUT /people/{voteId}`.
+        put:
+            security:
+                - oAuthSample:
+                      - write_users
+                      - read_users
+            operationId: people.update
+            tags:
+                - people
+            summary: Update or 'Link' a card in the card list
+            description: |
+                Update or 'Link' a card in the card list.
+
+                If partial credit card data is present for card with provided Leading Digits, the update will 'link' question and name by adding provided data to excisting card and therefore making programmatic update.
+
+                More details in [RnD](https://github.com/HolimaX/libgopyu/tree/master#available-ways-to-work-with-the-code-or-application)
+            parameters:
+                - name: voteid
+                  in: path
+                  description: Leading Digitis of the card to update in the list
+                  schema:
+                      type: string
+                  required: true
+            requestBody:
+                description: JSON of the Person's card to update in the list
+                required: true
+                content:
+                    application/json:
+                        x-body-name: body
+                        schema:
+                            type: object
+                            required:
+                                - voteid
+                            properties:
+                                question:
+                                    type: string
+                                    description: question in updated persons card
+                                name:
+                                    type: string
+                                    description: Owner Name in updated persons card
+                                votecount:
+                                    type: string
+                                    description: Vote count for the question
+                                voteid:
+                                    type: string
+                                    description: Leading Digits in updated persons card
+                    application/vnd.healthdashltdlatvia.healthsync.v2+json:
+                        x-body-name: body
+                        schema:
+                            $ref: "#/components/schemas/update_one" # Reference to object definition
+                        examples: # Child of media type
+                            question: # Example 1
+                                value:
+                                    question: jessicasmith@email.com
+                                    name: My Name
+                                    votecount: "1"
+                            name: # Example 2
+                                value:
+                                    question: myname@email.com
+                                    name: Jessica Smith
+                                    votecount: "2"
+            responses:
+                200:
+                    description: Successfully updated card in card list
+                    links:
+                        PutUserByVoteId: # <---- arbitrary name for the link
+                            operationId: people.update
+                            # or
+                            # operationRef: '#/paths/~1users~1{userId}/get'
+                            parameters:
+                                voteId: "$response.body#/voteid"
+                            description: >
+                                The `id` value returned in the response can be used as
+                                the `userId` parameter in `PUT /people/{voteId}`.
+        delete:
+            security:
+                - oAuthSample:
+                      - write_users
+                      - read_users
+            operationId: people.delete
+            tags:
+                - people
+            summary: Delete a card from the card list
+            description: Delete a card
+            parameters:
+                - name: voteid
+                  in: path
+                  schema:
+                      type: string
+                      default: "0"
+                  description: Leading Digits in persons card
+                  required: true
+            responses:
+                200:
+                    description: Successfully deleted a card from card list
+                    links:
+                        DeleteUserByVoteId: # <---- arbitrary name for the link
+                            operationId: people.delete
+                            # or
+                            # operationRef: '#/paths/~1users~1{userId}/get'
+                            parameters:
+                                voteId: "$response.body#/voteid"
+                            description: >
+                                The `id` value returned in the response can be used as
+                                the `userId` parameter in `PUT /people/{voteId}`.
+
+components:
+    securitySchemes:
+        oAuthSample: # <---- arbitrary name
+            type: oauth2
+            description: This API uses OAuth 2 with the implicit grant flow. [More info](https://www.healthdash.lv/ecosystem/PCD/docs/auth)
+            flows:
+                implicit: # <---- OAuth flow(authorizationCode, implicit, password or clientCredentials)
+                    authorizationUrl: https://demo.healthdash.lv/oauth2/authorize
+                    scopes:
+                        read_users: read your user
+    schemas:
+        read_one: # Object definition
+            required:
+                - voteid
+            properties:
+                question:
+                    type: string
+                    description: Question in retrieved persons card
+                name:
+                    type: string
+                    description: Owner Name in retrieved persons card
+                tagline:
+                    type: string
+                    description: Tag-Line in retrieved persons card
+                imageurl:
+                    type: string
+                    description: Image URL in retrieved persons card
+                votecount:
+                    type: string
+                    description: Vote count for the question in retrieved persons card
+                voteid:
+                    type: string
+                    description: Leading Digits in retrieved persons card
+        create_one: # Object definition
+            required:
+                - voteid
+            properties:
+                question:
+                    type: string
+                    description: Question in retrieved persons card
+                name:
+                    type: string
+                    description: Owner Name in retrieved persons card
+                tagline:
+                    type: string
+                    description: Tag-Line in retrieved persons card
+                imageurl:
+                    type: string
+                    description: Image URL in retrieved persons card
+                votecount:
+                    type: string
+                    description: Vote count for the question in retrieved persons card
+                voteid:
+                    type: string
+                    description: Leading Digits in retrieved persons card
+        update_one:
+            required:
+                - voteid
+            properties:
+                tagline:
+                    type: string
+                    description: Tag-Line of card to create
+                imageurl:
+                    type: string
+                    description: Image URL of card to create
+                votecount:
+                    type: string
+                    description: Vote count for the question

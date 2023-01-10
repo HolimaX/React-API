@@ -1,5 +1,5 @@
 ---
-openapi: "3.1"
+openapi: "3.1.0"
 info:
     description: |
         This is the swagger file with Mocked requests, that goes with server code in people.py or compatible modules.

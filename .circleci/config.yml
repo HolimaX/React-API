@@ -3,19 +3,16 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@4.7.0
+  node: circleci/node@6.1.0
 
 jobs:
   test:
     docker:
-      - image: circleci/node:14
+      - image: cimg/node:22.9.0-browsers
     steps:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-      - run:
-          name: Set package lock generation
-          command: npm config set package-lock true
       - run:
           name: Upgrade NPM
           command: 'npm install -g npm@latest && npm i -g npm-upgrade'

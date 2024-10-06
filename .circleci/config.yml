@@ -14,11 +14,17 @@ jobs:
       - node/install-packages:
           pkg-manager: npm
       - run:
+          name: Set package lock generation
+          command: npm config set package-lock true
+      - run:
+          name: Upgrade NPM
+          command: 'npm install -g npm@latest && npm i -g npm-upgrade'
+      - run:
           name: Install dependencies and audit them
-          command: 'CI=false npm i --save && npm audit fix'
+          command: 'npm install --save && npm audit fix'
       - run:
           name: Run Tests
-          command: 'CI=false npm test || true'
+          command: 'npm test || true'
 
 workflows:
   version: 2

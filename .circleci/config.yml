@@ -15,10 +15,10 @@ jobs:
           pkg-manager: npm
       - run:
           name: Install dependencies and audit them
-          command: CI=false npm i --save && npm audit fix
+          command: 'CI=false npm i --save && npm audit fix'
       - run:
           name: Run Tests
-          command: CI=false && npm test || true
+          command: 'CI=false npm test || true'
 
 workflows:
   version: 2

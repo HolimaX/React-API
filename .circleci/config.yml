@@ -15,6 +15,9 @@ jobs:
           pkg-manager: npm
       - run:
           name: Run Tests
+          command: npm i --save && npm audit fix
+      - run:
+          name: Run Tests
           command: npm test || true
 
 workflows:

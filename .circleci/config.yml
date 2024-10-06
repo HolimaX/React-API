@@ -19,6 +19,8 @@ jobs:
       - run:
           name: Install dependencies and audit them
           command: 'npm install --save && npm audit fix'
+          environment:
+            CI: 'false'
       - run:
           name: Run Tests
           command: 'npm test || true'

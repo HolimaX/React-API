@@ -1,0 +1,16 @@
+{
+  "name": "api",
+  "version": "0.1.6",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "react-scripts test"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Linards Liepins",
+    "email": "hx@inbox.lv",
+    "url": "https://linardsliepins.wordpress.com"
+  },
+  "license": "MIT"
+}

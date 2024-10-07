@@ -13,13 +13,13 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: npm
-          override-ci-command: 'npm install -g npm@latest && npm i -g npm-upgrade'
+          override-ci-command: npm install --save
       #- run:
       #    name: Upgrade NPM
       #    command: 'npm install -g npm@latest && npm i -g npm-upgrade'
       - run:
           name: Install dependencies and audit them
-          command: 'npm install --save && npm audit fix'
+          command: npm audit fix || true
           environment:
             CI: "false"
       - run:

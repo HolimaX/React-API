@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "react-scripts test"
+    "test": "swagger-cli validate postman/schemas/swagger.yaml"
   },
   "keywords": [],
   "author": {
@@ -12,5 +12,8 @@
     "email": "hx@inbox.lv",
     "url": "https://linardsliepins.wordpress.com"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@apidevtools/swagger-cli": "^4.0.4"
+  }
 }

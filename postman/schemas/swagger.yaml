@@ -2,41 +2,133 @@
 openapi: "3.1.0"
 info:
     description: |
-        This is the swagger file with Mocked requests, that goes with server code in people.py or compatible modules.
+        Public OpenAPI contract for the React API. It documents the RESTful CRUD
+        resources used by the React client and can also be used with compatible
+        mocked implementations such as people.py. Protected operations expect
+        an Okta-issued OAuth 2.0 access token. The API implementation is hosted
+        separately from this repository.
 
-        The Mocked requests are supported via ReSTful Microservice architecture.
+        Terminology for integrators:
+        - Cloud Dashboard (CD): the public, reusable React/API base
+            used by compatible integrators.
+        - Personalized Cloud Dashboard (PCD): the personalized Pro/Premium tier
+            that may add authenticated user data and platform integrations.
+        - Demo: a public reference deployment for browsing or integration
+            checks. A demo is not a production SLA, data-retention, or security
+            boundary and must not receive production or sensitive data.
+        - Mock: a simulated or local-compatible implementation, such as
+            people.py, used for development, tests, and contract exploration.
+            Mock responses do not prove production persistence, availability, or
+            Okta token validation.
 
-        For Production-ready API definitions, use [Code Samples for PCD v1.2.x](https://github.com/Healthdash/CloudDash-Backend-ReactJS-API) or later.
+        Integrators should use the OpenAPI contract for both demo and mock
+        clients, but must deploy or select a production API that implements the
+        documented routes, response shapes, CORS policy, and Okta validation.
 
-        For more information, see [HealthDash Homepage](https://demo.healthdash.lv)
-    version: "1.0.3"
-    title: Swagger ReSTful for PUT/GET/POST/DELETE (CRUD)
-    termsOfService: https://linardsliepins.wordpress.com/2019/09/18/privacy-policy/
+        For production-ready API definitions and implementation examples, see
+        the PCD v1.2.x code samples or later:
+        https://github.com/Healthdash/CloudDash-Backend-ReactJS-API
+
+        Integrator resources:
+        - HealthDash homepage: https://demo.healthdash.lv
+        - Support codes and integration references: https://www.healthdash.lv/SER
+        - Privacy policy and terms: https://linardsliepins.wordpress.com/2019/09/18/privacy-policy/
+    version: "2.0.0"
+    title: React API
     contact:
-        name: API Support for v1.2.x
-        url: https://www.healthdash.lv/ecosystem/PCD
-        email: support@healthdash.lv
+        name: Repository maintainers
+        url: https://github.com/HolimaX/React-API/issues
+    termsOfService: https://linardsliepins.wordpress.com/2019/09/18/privacy-policy/
     license:
         name: MIT
         url: https://github.com/HolimaX/React/blob/master/LICENSE
 
 externalDocs:
-    description: Support Codes
+    description: Support codes and integration references
     url: https://www.healthdash.lv/SER
+
+x-integrator-environments:
+    demo:
+        kind: reference-deployment
+        url: https://demo.healthdash.lv
+        purpose: Browse the reference Cloud Dashboard and perform non-production integration checks.
+        restrictions:
+            - Do not send production, personal, health, or other sensitive data.
+            - Availability, data retention, and API behavior may change without notice.
+    mock:
+        kind: simulated-implementation
+        implementation: people.py or another compatible local/mock server
+        purpose: Develop and test clients against the OpenAPI contract without depending on production services.
+        restrictions:
+            - Mock responses are not evidence of production persistence or availability.
+            - Configure authentication behavior explicitly; a mock may not validate Okta tokens.
+    production:
+        kind: integrator-hosted-implementation
+        purpose: Serve real application traffic from an implementation that conforms to this contract.
+        requirements:
+            - Validate Okta access-token signature, issuer, audience, expiry, and scopes.
+            - Configure HTTPS, CORS, rate limits, logging, retention, and data protection for the deployment.
 
 #basePath: /api
 servers:
-    - url: https://demo.healthdash.lv/api/
-      description: Mock server for v1.2.x
+    - url: "https://api.example.invalid/api/"
+      description: Replace with the deployed API base URL per environment.
 
 # Global security definition for component
 security:
-    - oAuthSample:
-          - write_users
-          - read_users
+    - bearerAuth: []
 
 # Paths supported by the server application
 paths:
+    /people:
+        get:
+            operationId: people.read_all
+            tags:
+                - people
+            summary: Read the first page of people cards
+            responses:
+                200:
+                    description: Successfully read people cards
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/read_one"
+    /users:
+        post:
+            operationId: users.create
+            tags:
+                - users
+            summary: Create a user account before Okta sign-in
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/create_user"
+            responses:
+                201:
+                    description: User account created
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+    /health-cards:
+        get:
+            operationId: health_cards.read_all
+            tags:
+                - health-cards
+            summary: Read health cards for the authenticated user
+            responses:
+                200:
+                    description: Successfully read health cards
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
     /version/{version}:
         get:
             operationId: people.read_filter
@@ -60,7 +152,7 @@ paths:
                           - Current
                           - Default
                       default: Latest
-                  description: Filter for version presets ( See [SER](https://www.healthdash.lv/SER) for details )
+                  description: Filter for version presets.
                   required: false
             responses:
                 200:
@@ -82,8 +174,7 @@ paths:
     /people/{voteid}:
         get:
             security:
-                - oAuthSample:
-                      - read_users
+                - bearerAuth: []
             operationId: people.read_one
             tags:
                 - people
@@ -127,9 +218,7 @@ paths:
                                 the `userId` parameter in `PUT /people/{voteId}`.
         put:
             security:
-                - oAuthSample:
-                      - write_users
-                      - read_users
+                - bearerAuth: []
             operationId: people.update
             tags:
                 - people
@@ -200,9 +289,7 @@ paths:
                                 the `userId` parameter in `PUT /people/{voteId}`.
         delete:
             security:
-                - oAuthSample:
-                      - write_users
-                      - read_users
+                - bearerAuth: []
             operationId: people.delete
             tags:
                 - people
@@ -232,14 +319,25 @@ paths:
 
 components:
     securitySchemes:
-        oAuthSample: # <---- arbitrary name
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: Okta OAuth 2.0 access token. Validate issuer, audience, signature, expiry, and scopes on the server.
+        oktaOidc:
             type: oauth2
-            description: This API uses OAuth 2 with the implicit grant flow. [More info](https://www.healthdash.lv/ecosystem/PCD/docs/auth)
+            description: OIDC authorization-code flow for the browser client. Configure the issuer per environment.
             flows:
-                implicit: # <---- OAuth flow(authorizationCode, implicit, password or clientCredentials)
-                    authorizationUrl: https://demo.healthdash.lv/oauth2/authorize
+                authorizationCode:
+                    authorizationUrl: "https://{oktaDomain}/oauth2/{authorizationServerId}/v1/authorize"
+                    tokenUrl: "https://{oktaDomain}/oauth2/{authorizationServerId}/v1/token"
                     scopes:
-                        read_users: read your user
+                        openid: Authenticate the user
+                        profile: Read basic profile claims
+                        email: Read the user's email claim
+                    x-token-validation:
+                        issuer: "https://{oktaDomain}/oauth2/{authorizationServerId}"
+                        audience: Configure to match the API authorization server
     schemas:
         read_one: # Object definition
             required:
@@ -298,3 +396,18 @@ components:
                 votecount:
                     type: string
                     description: Vote count for the question
+        create_user:
+            type: object
+            required:
+                - email
+            properties:
+                firstName:
+                    type: string
+                lastName:
+                    type: string
+                email:
+                    type: string
+                    format: email
+                password:
+                    type: string
+                    format: password

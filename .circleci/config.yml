@@ -10,7 +10,15 @@ jobs:
     docker:
       - image: cimg/node:22.9.0-browsers
     steps:
-      - checkout
+      - run:
+          name: Checkout code
+          command: |
+            REPO_URL="https://github.com/HolimaX/React-API.git"
+            if [ -n "${GITHUB_TOKEN:-}" ]; then
+              REPO_URL="https://${GITHUB_TOKEN}@github.com/HolimaX/React-API.git"
+            fi
+            git clone "$REPO_URL" .
+            git checkout "$CIRCLE_SHA1"
       - node/install-packages:
           pkg-manager: npm
       #- run:
